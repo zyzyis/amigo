@@ -3,13 +3,14 @@
 A python script to solve your mass photo storage.
 
 Run
-'''
+```
 ./amigo.py <Source Dir> <Dest Dir>
-'''
+```
 
 To organize the the photos from the source directory to the destination directory.
 
 All the files are organized by date, e.g. a tree structure can be like this
+```
 ├── Movies
 │   ├── 2012
 │   │   ├── 07
@@ -48,4 +49,6 @@ All the files are organized by date, e.g. a tree structure can be like this
     │           ├── IMG_7649.JPG
     │           ├── IMG_7650.JPG
     │           └── IMG_7652.JPG
-'''
+```
+
+The script will also identify duplicate photos, photos with the same name, and will deal with each of the type.
