@@ -43,12 +43,15 @@ All the files are organized by date, e.g. a tree structure can be like this
     │           ├── IMG_7645.JPG
 ```
 
-## How it can help you?
+# Why do you need this file?
 
+Most of the people today use Cloud drive provider (e.g. Amazon Cloud Drive) to store their photos. One of the steps before uploading is to oragnize them so that you feel it is clean with no duplication before you upload. By storing files based on the time it can prevent majority of the duplication problems and also provides a nice index structure for people to find photos. 
 
 ## Cases
-For most of the cases
+For most of the cases it just works fine, except the following cases where Amigo is going to do differently.
 
 ### Duplicate Photos
+Amigo will check whether the photo already exists in the Destination directory. If there is already a file with the same name exists, Amigo will compare two files to check whether they are identical. Amigo will check by comparing the MD5sum of part of the files. If both files are identical Amigo will just ignore the move of the files.
 
 ### Photos with the same name
+When there are two files which are NOT identical but just have the same name, Amigo will rename the existing photo file with a random integer as the suffix.
