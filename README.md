@@ -46,9 +46,9 @@ All the files are organized by date, e.g. a tree structure can be like this
 ## How it can help you?
 
 
-# Cases
+## Cases
 For most of the cases
 
-## Duplicate Photos
+### Duplicate Photos
 
-## Photos with the same name
+### Photos with the same name
