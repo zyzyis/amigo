@@ -25,17 +25,17 @@ class Logger(object):
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-    def prt(self, message, color):
+    def prt(self, message, color=''):
         """ print """
         print '%s%s%s' % (color, message, self.ENDC)
 
     def info(self, message):
         """ info print """
-        self.prt(message, self.HEADER)
+        print "%s[info]%s %s" % (self.HEADER, self.ENDC, message)
 
     def fail(self, message):
         """ failure print """
-        self.prt(message, self.FAIL)
+        print "%s[fail]%s %s" % (self.FAIL, self.ENDC, message)
 
 logger = Logger()
 
@@ -59,7 +59,7 @@ class FileUtil(object):
         """
         Returns True when the given two files are identical.
         """
-        return md5sum(src) == dest(md5sum)
+        return self._md5sum(src) == self._md5sum(dest)
 
     def move_file(self, file_name, file_path, date, root):
         """
@@ -101,10 +101,16 @@ class FileUtil(object):
         try:
             shutil.move(file_path, dest_path)
         except Exception as ex:
-            logger.fail('File %s is failed to move', file_path)
+            logger.fail('File %s is failed to move' % file_path)
             return_code = MoveCode.FAILED
         return return_code
 
+    def get_file_date(self, filepath):
+        """
+        Returns the date of the file creation.
+        """
+        time_value = time.ctime(os.path.getmtime(filepath))
+        return datetime.strptime(time_value, "%a %b %d %H:%M:%S %Y")
 class MoveCode(object):
     """
     Move the item to the ROOT directory with the date.
@@ -125,7 +131,7 @@ class Amigo(object):
         self.pic_root = pic_root
         self.mov_root = mov_root
         self.pic_exts = {"JPG", "PNG", "JPEG"}
-        self.mov_exts = {'MOV', 'M4V', 'MP4'}
+        self.mov_exts = {'MOV', 'M4V', 'MP4', 'AVI'}
 
         # files which are not images nor movies.
         self.non_imgs = []
@@ -171,7 +177,7 @@ class Amigo(object):
             return True
         return False
 
-    def get_image_date(self, filepath):
+    def get_image_date(self, file_path):
         """
         Returns the date when the given picture is captured. Returns None when the capture date
         does not exist in the original file.
@@ -197,18 +203,11 @@ class Amigo(object):
         """
         return None
 
-    def get_file_date(self, filepath):
-        """
-        Returns the date of the file creation.
-        """
-        time_value = time.ctime(os.path.getmtime(filepath))
-        return datetime.strptime(time_value, "%a %b %d %H:%M:%S %Y")
-
     def run(self, src, dst):
         """
         Run the movement from source directory to the destination directory.
         """
-        for root, dirs, files in os.walk(dirname):
+        for root, dirs, files in os.walk(src):
             for name in files:
                 file_path = os.path.join(root, name)
                 # check file validation
@@ -216,18 +215,18 @@ class Amigo(object):
                     self.non_imgs.append(file_path)
                     continue
 
-                dest_path = root_dest
+                dest_path = dst
                 date = None
                 if self.is_a_pic(name):
-                    img_count = img_count + 1
+                    self.img_count = self.img_count + 1
                     date = self.get_image_date(file_path)
-                    dest_path = os.path.join(root_dest, PIC_DEST)
+                    dest_path = os.path.join(dst, self.pic_root)
                     if date is None:
                         self.empty_date_imgs.append(file_path)
                 elif self.is_a_movie(name):
                     self.mov_count = self.mov_count + 1
                     date = self.get_movie_date(file_path)
-                    dest_path = os.path.join(root_dest, MOV_DEST)
+                    dest_path = os.path.join(dst, self.mov_root)
                     if date is None:
                         self.empty_date_movs.append(file_path)
 
@@ -245,15 +244,15 @@ class Amigo(object):
                 self.move_count[rc] = self.move_count[rc] + 1
 
     def print_result(self):
-        logger.prt('-------------------------', Logger.OKBLUE)
-        logger.prt('Total Images     : %25d' % img_count, Logger.OKBLUE)
-        logger.prt('Empty Date Images: %25d' % len(empty_date_imgs), Logger.OKBLUE)
-        logger.prt('Non Images       : %25d' % len(non_imgs), Logger.OKBLUE)
-        logger.prt('Empty Date Movies: %25d' % len(empty_date_movs), Logger.OKBLUE)
-        logger.prt('Move             : %25d' % move_count[MoveCode.SUCCESS], Logger.OKBLUE)
-        logger.prt('Duplicate        : %25d' % move_count[MoveCode.DUPLICATE], Logger.OKBLUE)
-        logger.prt('Same File Name   : %25d' % move_count[MoveCode.SAME_NAME], Logger.OKBLUE)
-        logger.prt('Failure Count    : %25d' % move_count[MoveCode.FAILED], Logger.OKBLUE)
+        logger.prt('-------------------------')
+        logger.prt('Total Images     : %25d' % self.img_count)
+        logger.prt('Empty Date Images: %25d' % len(self.empty_date_imgs))
+        logger.prt('Non Images       : %25d' % len(self.non_imgs))
+        logger.prt('Empty Date Movies: %25d' % len(self.empty_date_movs))
+        logger.prt('Move             : %25d' % self.move_count[MoveCode.SUCCESS])
+        logger.prt('Duplicate        : %25d' % self.move_count[MoveCode.DUPLICATE])
+        logger.prt('Same File Name   : %25d' % self.move_count[MoveCode.SAME_NAME])
+        logger.prt('Failure Count    : %25d' % self.move_count[MoveCode.FAILED])
 
 # Main
 if __name__ == '__main__':
